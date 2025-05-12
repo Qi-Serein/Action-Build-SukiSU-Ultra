@@ -98,12 +98,12 @@ on:
         type: boolean
         description: "是否启用内核模块支持(KPM)？"
         required: true
-        default: true
+        default: false
       ZRAM:
         type: boolean
         description: "是否启用添加更多的ZRAM算法？"
         required: true
-        default: false
+        default: true
 
 jobs:
   build:
