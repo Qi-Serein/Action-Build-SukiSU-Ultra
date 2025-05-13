@@ -7,7 +7,7 @@
  
 # 公告
  
-配置文件中的_x后缀是你正在使用系统版本。_v是Android15、_u是Android14、_t是Android13。
+配置文件中的_x后缀是你正在使用系统版本。_v是Android15、_u是Android14、_t是Android13、无后缀一般是一个机型出厂Android版本。
  
 部分设备的``lz4kd``存在问题,修复中,**跑不出来请先不要启用``lz4``**
  
