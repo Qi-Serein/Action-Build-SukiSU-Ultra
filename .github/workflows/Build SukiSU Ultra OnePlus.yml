@@ -429,28 +429,34 @@ jobs:
           ARTIFACT_URL=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs/$LATEST_RUN_ID/artifacts" | jq -r '.artifacts[0].archive_download_url')
 
-          curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ksu_module_susfs.zip "$ARTIFACT_URL"
-          cp ksu_module_susfs.zip ./AnyKernel3/
+          curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ksu_module_susfs_1.5.2+_CI.zip "$ARTIFACT_URL"
+          cp ksu_module_susfs_1.5.2+_CI.zip ./AnyKernel3/
 
       # 下载 SUSFS 模块（Release）
       - name: Download Latest SUSFS Module from Release
         if: ${{ github.event.inputs.SUSFS_CI == 'false' }}
         run: |
-          wget https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
-          cp ksu_module_susfs_1.5.2+.zip ./AnyKernel3/
+          wget -O ksu_module_susfs_1.5.2+_Release.zip https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
+          cp ksu_module_susfs_1.5.2+_Release.zip ./AnyKernel3/
 
       - name: Set suffix
         id: suffix
         run: |
           echo "value=${{ github.event.inputs.KPM == 'true' && '_KPM' || '' }}${{ github.event.inputs.VFS == 'true' && '_VFS' || '' }}${{ github.event.inputs.ZRAM == 'true' && '_LZ4KD' || '' }}" >> $GITHUB_OUTPUT
 
-      - name: Remove _uvt suffix from FEIL
+      - name: Remove _uvt suffix from FEIL and map to Android version
         id: feil_clean
         run: |
-          clean_feil="${{ github.event.inputs.FEIL }}"
-          clean_feil="${clean_feil%_v}"  # 去掉结尾的 _v（如果有）A15
-          clean_feil="${clean_feil%_u}"  # 去掉结尾的 _u（如果有）A14
-          clean_feil="${clean_feil%_t}"  # 去掉结尾的 _t（如果有）A13
+          feil="${{ github.event.inputs.FEIL }}"
+          if [[ "$feil" == *_v ]]; then
+            clean_feil="${feil%_v}_Android15"
+          elif [[ "$feil" == *_u ]]; then
+            clean_feil="${feil%_u}_Android14"
+          elif [[ "$feil" == *_t ]]; then
+            clean_feil="${feil%_t}_Android13"
+          else
+            clean_feil="${feil}_AndroidFactory"
+          fi
           echo "value=$clean_feil" >> $GITHUB_OUTPUT
 
       - name: Upload AnyKernel3
