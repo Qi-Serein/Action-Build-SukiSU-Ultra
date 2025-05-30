@@ -113,7 +113,7 @@ jobs:
         with:
           root-reserve-mb: 8192
           temp-reserve-mb: 2048
-          swap-size-mb: 8192
+          swap-size-mb: 2048
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
@@ -123,11 +123,6 @@ jobs:
         run: |
           git config --global user.name "Numbersf"
           git config --global user.email "263623064@qq.com"
-
-      - name: Install dependencies
-        run: |
-          sudo apt update && sudo apt upgrade -y
-          sudo apt install -y python3 git curl
 
       - name: Show selected inputs debug
         run: |
@@ -141,6 +136,12 @@ jobs:
           echo "Selected SUSFS_CI: ${{ github.event.inputs.SUSFS_CI }}"
           echo "Selected VFS: ${{ github.event.inputs.VFS }}"
           echo "Selected ZRAM: ${{ github.event.inputs.ZRAM }}"
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt upgrade -y
+          sudo apt install -y python3 git curl
+
 
       - name: Install repo tool
         run: |
@@ -184,7 +185,7 @@ jobs:
             kernel_platform/external/dtc/scripts/setlocalversion; do
               # 清理默认后缀
               sed -i '/^res=/a res=$(echo "$res" | sed -E '\''s/-[0-9]+-o-g[0-9a-f]{7,}//'\'')' "$path"
-              # 替换 echo "$res" 为自定义后缀
+              # 替换 echo "$res" 为自定义后缀，使用 bazel 编译有特殊符号字数限制，如果出错，请减短
               sed -i "\$s|echo \"\\\$res\"|echo \"\$res-${{ github.event.inputs.SUFFIX }}\"|" "$path"
           done
           git add -A
@@ -271,7 +272,7 @@ jobs:
             wget https://github.com/Numbersf/Action-Build/raw/main/patchs/hmbird_patch.patch
             echo "正在打OGKI转换GKI补丁"
             patch -p1 -F 3 < hmbird_patch.patch
-            echo "OGKI转换GKI patch完成"
+            echo "OGKI转换GKI_patch完成"
 
       - name: Apply VFS
         if: ${{ github.event.inputs.VFS == 'true' }}
@@ -489,6 +490,31 @@ jobs:
           wget -O ksu_module_susfs_1.5.2+_Release.zip https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
           cp ksu_module_susfs_1.5.2+_Release.zip ./AnyKernel3/
 
+      # 解压 SukiSU Ultra（CI）（不自动安装）
+      - name: Download Latest SukiSU-Ultra APK from CI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          run_id=$(gh api \
+            "repos/SukiSU-Ultra/SukiSU-Ultra/actions/workflows/build-manager.yml/runs?branch=main&status=success&per_page=1" \
+            --jq '.workflow_runs[0].id')
+          if [[ -z "$run_id" ]]; then
+            echo "No successful workflow run found."
+            exit 1
+          fi
+
+          artifact_url=$(gh api \
+            "repos/SukiSU-Ultra/SukiSU-Ultra/actions/runs/$run_id/artifacts" \
+            --jq '.artifacts[] | select(.name == "manager") | .archive_download_url')
+
+          if [[ -z "$artifact_url" ]]; then
+            echo "No manager artifact found."
+            exit 1
+          fi
+
+          curl -L -H "Authorization: token $GITHUB_TOKEN" -o manager.zip "$artifact_url"
+          unzip -j manager.zip "*.apk" -d ./AnyKernel3/
+
       # 从一加源码中获取适用的 Android 版本信息，注意是系统 Android 版本而非你填写的内核 Android 版本，非一加官方源码可能需要修改或删除这一步
       - name: Set zip suffix
         id: suffix
@@ -503,7 +529,7 @@ jobs:
           xml=".repo/manifests/${feil}.xml"
 
           if [ ! -f "$xml" ]; then
-            echo "Manifest $xml not found, attempting to download from branch oneplus/$cpu..."
+            echo "Manifest $xml not found,This is expected behavior,not an error.Attempting to download from branch oneplus/$cpu..."
             mkdir -p .repo/manifests
             git clone --depth=1 --branch oneplus/$cpu https://github.com/OnePlusOSS/kernel_manifest.git repo_tmp || {
               echo "Failed to clone branch oneplus/$cpu"
@@ -514,7 +540,7 @@ jobs:
             if [ -f "repo_tmp/${feil}.xml" ]; then
               mv "repo_tmp/${feil}.xml" "$xml"
             else
-              echo "Manifest file ${feil}.xml not found in branch oneplus/$cpu,This is expected behavior, not an error."
+              echo "Manifest file ${feil}.xml not found in branch oneplus/$cpu"
               echo "value=${feil}_AndroidUnknown" >> "$GITHUB_OUTPUT"
               rm -rf repo_tmp
               exit 0

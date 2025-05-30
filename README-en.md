@@ -7,12 +7,36 @@
 
 # Announcement
 
-The _x suffix in the configuration file indicates the codename of the Android version you are currently using. For example, `_w corresponds to Android 16, _v to Android 15, _u to Android 14, _t to Android 13, and _s to Android 12.` A configuration without any suffix usually refers to the device's factory Android version.
- 
-Some devices have issues with `lz4kd`, and a fix is in progress. **If the build fails, please do NOT enable the `ZRAM algorithm`**, and make sure to back up your `boot.img` in advance!
- 
- 
-Remember to install the module with **volume down**.
+The ``_x`` suffix in the configuration file is the code name for the system version you are using. For example, ``_w Android16``, ``_v Android15``, ``_u Android14``, ``_t Android13``, ``_sAndroid12``, and so on—**in reverse alphabetical order, lowercase**. The one without a suffix is generally the factory ``Android`` version of a device model. Currently, I have only added devices with ``Android15``, that is, the ``_v`` suffix, in the pre-selection. If you are using another Android version, please manually change ``_v`` to another code name.
+
+------
+
+Regarding how long it takes to run, it is divided into four levels. Generally, the earlier the device model, the faster it runs.
+>***Examples of time required for some models***
+>>>1.sm8450, sm8475, sm8550
+
+>>`30~35min,max:45min`
+>>>2.sm7675, sm7550, sm8650
+
+>>`1h1min~1h12min,max:1h32min`
+>>>3.sm8750
+
+>>`2h1min~2h22min,max:2h45min`
+>>>4.Known special models: some non-A15 models
+
+>>`1h22min~1h28min,max:?`
+>
+That is to say, if the running time for your device exceeds the maximum time above, please try to rerun and check ``step`` to ensure it is not an official issue.
+
+------
+
+Some devices have problems with ``lz4kd``, which are being fixed. **If it cannot run, please do not enable ``ZRAM algorithm`` for now**; please back up ``boot.img`` in advance.
+
+------
+
+Remember to **hold volume down** to install the module.
+
+------
  
 # Changelog
 -- Remove potential version code from the suffix of the configuration file written to `ak3.zip` and replace it with the exact `Android` version number `XX.X.X`.  
