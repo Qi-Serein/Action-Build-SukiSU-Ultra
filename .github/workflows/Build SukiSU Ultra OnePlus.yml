@@ -87,11 +87,6 @@ on:
         description: "自定义内核后缀 (留空则使用随机字符串)"
         required: false
         default: ""
-      SUSFS_CI:
-        type: boolean
-        description: "下载SUSFS模块是否使用CI构建？"
-        required: true
-        default: true
       VFS:
         type: boolean
         description: "是否启用手动钩子(VFS)？"
@@ -463,57 +458,6 @@ jobs:
             fi
           done
           fi
-
-      # 下载 SUSFS 模块（CI）
-      - name: Download Latest SUSFS Module from CI
-        if: ${{ github.event.inputs.SUSFS_CI == 'true' }}
-        run: |
-          LATEST_RUN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs?status=success" | \
-            jq -r '.workflow_runs[] | select(.head_branch == "v1.5.2+") | .id' | head -n 1)
-
-          if [ -z "$LATEST_RUN_ID" ]; then
-            echo "No successful run found for branch v1.5.2+"
-            exit 1
-          fi
-
-          ARTIFACT_URL=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs/$LATEST_RUN_ID/artifacts" | jq -r '.artifacts[0].archive_download_url')
-
-          curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ksu_module_susfs_1.5.2+_CI.zip "$ARTIFACT_URL"
-          cp ksu_module_susfs_1.5.2+_CI.zip ./AnyKernel3/
-
-      # 下载 SUSFS 模块（Release）*
-      - name: Download Latest SUSFS Module from Release
-        if: ${{ github.event.inputs.SUSFS_CI == 'false' }}
-        run: |
-          wget -O ksu_module_susfs_1.5.2+_Release.zip https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
-          cp ksu_module_susfs_1.5.2+_Release.zip ./AnyKernel3/
-
-      # 解压 SukiSU Ultra（CI）（不自动安装）
-      - name: Download Latest SukiSU-Ultra APK from CI
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          run_id=$(gh api \
-            "repos/SukiSU-Ultra/SukiSU-Ultra/actions/workflows/build-manager.yml/runs?branch=main&status=success&per_page=1" \
-            --jq '.workflow_runs[0].id')
-          if [[ -z "$run_id" ]]; then
-            echo "No successful workflow run found."
-            exit 1
-          fi
-
-          artifact_url=$(gh api \
-            "repos/SukiSU-Ultra/SukiSU-Ultra/actions/runs/$run_id/artifacts" \
-            --jq '.artifacts[] | select(.name == "manager") | .archive_download_url')
-
-          if [[ -z "$artifact_url" ]]; then
-            echo "No manager artifact found."
-            exit 1
-          fi
-
-          curl -L -H "Authorization: token $GITHUB_TOKEN" -o manager.zip "$artifact_url"
-          unzip -j manager.zip "*.apk" -d ./AnyKernel3/
 
       # 从一加源码中获取适用的 Android 版本信息，注意是系统 Android 版本而非你填写的内核 Android 版本，非一加官方源码可能需要修改或删除这一步
       - name: Set zip suffix
