@@ -6,7 +6,7 @@ on:
         type: choice
         description: "分支"
         required: true
-        默认: sm8475
+        default: sm8475
         options:
           - sm7550
           - sm7675
@@ -19,7 +19,7 @@ on:
         type: choice
         description: "配置文件"
         required: true
-        默认: oneplus_ace2_v
+        default: oneplus_ace2_v
         options:
           - oneplus_nord_ce4_v
           - oneplus_ace_3v_v
@@ -47,7 +47,7 @@ on:
         type: choice
         description: "处理器代号"
         required: true
-        默认: waipio
+        default: waipio
         options:
           - crow
           - waipio
@@ -58,7 +58,7 @@ on:
         type: choice
         description: "内核初始安卓版本"
         required: true
-        默认: android12
+        default: android12
         options:
           - android12
           - android13
