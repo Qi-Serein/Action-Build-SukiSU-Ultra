@@ -3,38 +3,38 @@ index 35f092065..21a17ad1e 100644
 --- a/tools/bpf/resolve_btfids/Makefile
 +++ b/tools/bpf/resolve_btfids/Makefile
 @@ -44,7 +44,7 @@ $(OUTPUT) $(OUTPUT)/libbpf $(OUTPUT)/libsubcmd:
-         $(Q)mkdir -p $(@)
-
+ 	$(Q)mkdir -p $(@)
+ 
  $(SUBCMDOBJ): fixdep FORCE | $(OUTPUT)/libsubcmd
--        $(Q)$(MAKE) -C $(SUBCMD_SRC) OUTPUT=$(abspath $(dir $@))/ $(abspath $@)
-+        $(Q)$(MAKE) -C $(SUBCMD_SRC) EXTRA_CFLAGS="$(CFLAGS)" OUTPUT=$(abspath $(dir $@))/ $(abspath $@)
-
+-	$(Q)$(MAKE) -C $(SUBCMD_SRC) OUTPUT=$(abspath $(dir $@))/ $(abspath $@)
++	$(Q)$(MAKE) -C $(SUBCMD_SRC) EXTRA_CFLAGS="$(CFLAGS)" OUTPUT=$(abspath $(dir $@))/ $(abspath $@)
+ 
  $(BPFOBJ): $(wildcard $(LIBBPF_SRC)/*.[ch] $(LIBBPF_SRC)/Makefile) | $(OUTPUT)/libbpf
-         $(Q)$(MAKE) $(submake_extras) -C $(LIBBPF_SRC)  OUTPUT=$(abspath $(dir $@))/ \
+ 	$(Q)$(MAKE) $(submake_extras) -C $(LIBBPF_SRC)  OUTPUT=$(abspath $(dir $@))/ \
 diff --git a/tools/lib/subcmd/parse-options.c b/tools/lib/subcmd/parse-options.c
 index 39ebf6192..22a948920 100644
 --- a/tools/lib/subcmd/parse-options.c
 +++ b/tools/lib/subcmd/parse-options.c
 @@ -637,10 +637,11 @@ int parse_options_subcommand(int argc, const char **argv, const struct option *o
-         /* build usage string if it's not provided */
-         if (subcommands && !usagestr[0]) {
-                 char *buf = NULL;
-+                int i;
-
-                 astrcatf(&buf, "%s %s [<options>] {", subcmd_config.exec_name, argv[0]);
-
--                for (int i = 0; subcommands[i]; i++) {
-+                for (i = 0; subcommands[i]; i++) {
-                         if (i)
-                                 astrcat(&buf, "|");
-                         astrcat(&buf, subcommands[i]);
+ 	/* build usage string if it's not provided */
+ 	if (subcommands && !usagestr[0]) {
+ 		char *buf = NULL;
++		int i;
+ 
+ 		astrcatf(&buf, "%s %s [<options>] {", subcmd_config.exec_name, argv[0]);
+ 
+-		for (int i = 0; subcommands[i]; i++) {
++		for (i = 0; subcommands[i]; i++) {
+ 			if (i)
+ 				astrcat(&buf, "|");
+ 			astrcat(&buf, subcommands[i]);
 @@ -666,7 +667,8 @@ int parse_options_subcommand(int argc, const char **argv, const struct option *o
-                 exit(130);
-         case PARSE_OPT_LIST_SUBCMDS:
-                 if (subcommands) {
--                        for (int i = 0; subcommands[i]; i++)
-+                        int i;
-+                        for (i = 0; subcommands[i]; i++)
-                                 printf("%s ", subcommands[i]);
-                 }
-                 putchar('\n');
+ 		exit(130);
+ 	case PARSE_OPT_LIST_SUBCMDS:
+ 		if (subcommands) {
+-			for (int i = 0; subcommands[i]; i++)
++			int i;
++			for (i = 0; subcommands[i]; i++)
+ 				printf("%s ", subcommands[i]);
+ 		}
+ 		putchar('\n');
