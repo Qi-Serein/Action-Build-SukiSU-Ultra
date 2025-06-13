@@ -6,7 +6,7 @@ on:
       repo:
         description: '清理的仓库(格式:用户名/仓库名)'
         required: true
-        default: 'Numbersf/Action-Build'
+        default: 'Qi-Serein/Action-Build-SukiSU-Ultra'
       workflow_name:
         type: choice
         description: '清理的工作流名称'
