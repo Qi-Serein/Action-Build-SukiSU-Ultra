@@ -6,7 +6,7 @@ on:
         type: choice
         description: "配置文件"
         required: true
-        default: oneplus_ace2_pro_v
+        default: oneplus_ace2_v
         options:
           - oneplus_nord_ce4_v
           - oneplus_ace_3v_v
@@ -45,7 +45,7 @@ on:
         type: choice
         description: "下载SUSFS模块调用方式"
         required: true
-        default: CI
+        default: NoN
         options:
           - CI
           - Release
@@ -69,7 +69,7 @@ on:
         type: boolean
         description: "是否启用内核模块(KPM)？"
         required: true
-        default: true
+        default: false
       SCHED:
         type: boolean
         description: "是否添加风驰驱动？"
@@ -575,32 +575,6 @@ jobs:
         run: |
           wget -O ksu_module_susfs_1.5.2+_Release.zip https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
           cp ksu_module_susfs_1.5.2+_Release.zip ./AnyKernel3/
-
-      # 解压 SukiSU Ultra（CI）（不自动安装）
-      - name: Download Latest SukiSU-Ultra APK from CI
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          run_id=$(gh api \
-            "repos/SukiSU-Ultra/SukiSU-Ultra/actions/workflows/build-manager.yml/runs?branch=main&status=success&per_page=1" \
-            --jq '.workflow_runs[0].id' || echo "")
-
-          if [[ -z "$run_id" ]]; then
-            echo "⚠️ No successful workflow run found. Skipping artifact download."
-          else
-            artifact_url=$(gh api \
-              "repos/SukiSU-Ultra/SukiSU-Ultra/actions/runs/$run_id/artifacts" | \
-              jq -r '.artifacts[] | select(.name == "manager") | .archive_download_url' | head -n1)
-
-            if [[ -z "$artifact_url" ]]; then
-              echo "⚠️ No 'manager' artifact found in run $run_id. Skipping download."
-            else
-              echo "✅ Downloading from: $artifact_url"
-              curl -fL -H "Authorization: token $GITHUB_TOKEN" -o manager.zip "$artifact_url"
-              unzip -j manager.zip "*.apk" -d ./AnyKernel3/
-            fi
-          fi
 
       # 从一加源码中获取适用的 Android 版本信息，注意是系统 Android 版本而非你填写的内核 Android 版本，非一加官方源码可能需要修改或删除这一步
       - name: Set zip suffix
